@@ -1,12 +1,10 @@
 © 2i games. All rights reserved. All trademarks are property of their respective owners in the UK and other countries.
 
-### This repo is archived and there will be NO SUPPORT. It has the MIT license, use it however you like, just don't remove the credits or the branding of the 'impulse' framework.
-
 # Welcome to impulse
 impulse is a Semi-Serious roleplay framework for Garry's Mod.
 
 ## Working with impulse
-[Check out the docs](https://vingard.github.io/impulsedocs/). If you want to just get started read the ['Installing impulse' guide](https://vingard.github.io/impulsedocs/topics/00-installing.md.html). **The docs are VERY incomplete! Look through (search) the source code of the framework for full documentation!**
+[Check out the docs](https://quantor97.github.io/impulse/). If you want to just get started read the ['Installing impulse' guide](https://quantor97.github.io/impulse/manual/00-installing/). **The docs are VERY incomplete! Look through (search) the source code of the framework for full documentation!**
 
 ### Schemas
 * [impulseskeleton](https://github.com/vingard/impulseskeleton) - Use this schema as a template for your schema! Shows the basics of schemas.
