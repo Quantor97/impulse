@@ -23,6 +23,8 @@ if SERVER then
 	    net.Send(self)
 	end
 
+    --- @module impulse
+
     --- Displays a cinematic intro message to all players.
     -- @realm server
     -- @string message The message to display on screen
@@ -31,6 +33,8 @@ if SERVER then
         net.WriteString(message)
         net.Broadcast()
     end
+
+    --- @classmod Player
 
     concommand.Add("impulse_cinemessage", function(ply, cmd, args)
         if not ply:IsSuperAdmin() then return end
