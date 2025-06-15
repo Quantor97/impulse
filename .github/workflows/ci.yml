@@ -36,11 +36,3 @@ jobs:
         run: |
           cp -v docs/css/* docs/html
           cp -v docs/js/* docs/html
-
-      - name: Deploy
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository == 'Quantor97/impulse' && success()
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.TOKEN }}
-          publish_dir: impulse/docs/html
-          cname: docs.getimpulse.co
