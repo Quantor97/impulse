@@ -28,45 +28,6 @@
 	<section>
 				<details class="category" open>
 					<summary>
-						<h2>Hooks</h2>
-					</summary>
-
-					<ul>
-							<li>
-									<details >
-									<summary><a href="../../hooks/faction/">Faction</a></summary>
-
-									<ul>
-
-
-										<li>
-											<span class="realm shared"></span>
-											<a href="../../hooks/faction/#GetDefaultName">
-GetDefaultName											</a>
-										</li>
-										<li>
-											<span class="realm server"></span>
-											<a href="../../hooks/faction/#OnCharacterCreated">
-OnCharacterCreated											</a>
-										</li>
-										<li>
-											<span class="realm server"></span>
-											<a href="../../hooks/faction/#OnSpawn">
-OnSpawn											</a>
-										</li>
-										<li>
-											<span class="realm server"></span>
-											<a href="../../hooks/faction/#OnTransferred">
-OnTransferred											</a>
-										</li>
-
-									</ul>
-									</details>
-							</li>
-					</ul>
-				</details>
-				<details class="category" open>
-					<summary>
 						<h2>Libraries</h2>
 					</summary>
 
@@ -1101,12 +1062,12 @@ GetSavedRPName											</a>
 GetSkillLevel											</a>
 										</li>
 										<li>
-											<span class="realm server"></span>
+											<span class="realm client"></span>
 											<a href="../../classes/player/#GetSkillXP">
 GetSkillXP											</a>
 										</li>
 										<li>
-											<span class="realm client"></span>
+											<span class="realm server"></span>
 											<a href="../../classes/player/#GetSkillXP">
 GetSkillXP											</a>
 										</li>
@@ -3059,48 +3020,6 @@ leaveSequence											</a>
 		<section class="method">
 			<header>
 				<a class="anchor" id="GetSkillXP">
-					<h1><span class="realm client"></span></span>Player:GetSkillXP(name)</h1>
-				</a>
-
-
-					<a class="reference" href="https://github.com/nebulouscloud/helix/tree/master/gamemode/core/sh_skills.lua#L51">View source &raquo;</a>
-
-					<p>Returns the player's XP for a specific skill.</p>
-			</header>
-
-
-					<h3>Parameters</h3>
-
-
-					<ul>
-
-							<li>
-								<span class="tag parameter">name</span>
-
-									<span class="tag"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-
-
-								<p> Skill name</p>
-							</li>
-					</ul>
-
-
-				<h3>Returns</h3>
-				<ul>
-
-							<li>
-									<span class="type">number</span>
-
-								<p>XP amount for the skill</p>
-							</li>
-
-				</ul>
-
-
-		</section>
-		<section class="method">
-			<header>
-				<a class="anchor" id="GetSkillXP">
 					<h1><span class="realm server"></span></span>Player:GetSkillXP(name)</h1>
 				</a>
 
@@ -3134,6 +3053,48 @@ leaveSequence											</a>
 									<span class="type">int</span>
 
 								<p>Current XP value (defaults to 0 if undefined)</p>
+							</li>
+
+				</ul>
+
+
+		</section>
+		<section class="method">
+			<header>
+				<a class="anchor" id="GetSkillXP">
+					<h1><span class="realm client"></span></span>Player:GetSkillXP(name)</h1>
+				</a>
+
+
+					<a class="reference" href="https://github.com/nebulouscloud/helix/tree/master/gamemode/core/sh_skills.lua#L51">View source &raquo;</a>
+
+					<p>Returns the player's XP for a specific skill.</p>
+			</header>
+
+
+					<h3>Parameters</h3>
+
+
+					<ul>
+
+							<li>
+								<span class="tag parameter">name</span>
+
+									<span class="tag"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+								<p> Skill name</p>
+							</li>
+					</ul>
+
+
+				<h3>Returns</h3>
+				<ul>
+
+							<li>
+									<span class="type">number</span>
+
+								<p>XP amount for the skill</p>
 							</li>
 
 				</ul>
