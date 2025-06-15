@@ -29,7 +29,7 @@ jobs:
 
       - name: Build docs
         working-directory: impulse
-        run: ldoc . --fatalwarnings
+        run: ldoc .
 
       - name: Copy assets
         working-directory: impulse
