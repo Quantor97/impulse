@@ -37,9 +37,9 @@ jobs:
           cp -v docs/css/* docs/html || true
           cp -v docs/js/* docs/html || true
 
-      - name: Deploy to GitHub Pages
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      - name: Deploy
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository == 'Quantor97/impulse' && success()
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: impulse/docs/html
