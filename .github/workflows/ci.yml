@@ -12,7 +12,7 @@ jobs:
           path: impulse
 
       - uses: leafo/gh-actions-lua@v8.0.0
-        with:
+        with: 
           luaVersion: "5.2"
 
       - uses: leafo/gh-actions-luarocks@v4.0.0
