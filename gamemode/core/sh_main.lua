@@ -6,17 +6,26 @@ if SERVER then
 	util.AddNetworkString( "GM-SurfaceSound" )
     util.AddNetworkString("impulseNotify")
 
+    --- Sends a colored chat message to the player.
+    -- @realm server
+    -- @param ... A sequence of strings and Color objects, like `Color(255,0,0), "Hello", Color(255,255,255), " world!"`
 	function meta:AddChatText(...)
 		local package = {...}
 		netstream.Start(self, "GM-ColoredMessage", package)
 	end
 
+    --- Plays a surface sound on the client.
+    -- @realm server
+    -- @string sound The sound path (e.g., "buttons/button14.wav")
 	function meta:SurfacePlaySound(sound)
 	    net.Start("GM-SurfaceSound")
 	    net.WriteString(sound)
 	    net.Send(self)
 	end
 
+    --- Displays a cinematic intro message to all players.
+    -- @realm server
+    -- @string message The message to display on screen
     function impulse.CinematicIntro(message)
         net.Start("impulseCinematicMessage")
         net.WriteString(message)
@@ -29,6 +38,9 @@ if SERVER then
         impulse.CinematicIntro(args[1] or "")
     end)
 
+    --- Enables or disables the player's ability to modify their PVS (Potentially Visible Set).
+    -- @realm server
+    -- @bool bool True to allow, false to disallow
     function meta:AllowScenePVSControl(bool)
         self.allowPVS = bool
 
@@ -49,14 +61,14 @@ end
 
 local eMeta = FindMetaTable("Entity")
 
---- Returns if a player is an impulse framework developer
+--- Returns if a player is an impulse framework developer (SteamID is hardcoded, dont use)
 -- @realm shared
 -- @treturn bool Is developer
 function meta:IsDeveloper()
     return self:SteamID() == "STEAM_0:1:95921723"
 end
 
---- Returns if a player has donator status
+--- Returns if a player has donator ( or admin)
 -- @realm shared
 -- @treturn bool Is donator
 function meta:IsDonator()
@@ -69,6 +81,9 @@ local adminGroups = {
     ["communitymanager"] = true
 }
 
+--- Returns if a player is admin
+-- @realm shared
+-- @treturn bool Is Admin
 function meta:IsAdmin()
     if self.IsSuperAdmin(self) then
         return true
@@ -86,6 +101,9 @@ local leadAdminGroups = {
     ["communitymanager"] = true
 }
 
+--- Returns if a player is a lead admin
+-- @realm shared
+-- @treturn bool Is a lead Admin
 function meta:IsLeadAdmin()
     if self.IsSuperAdmin(self) then
         return true
@@ -105,10 +123,20 @@ function meta:InSpawn()
     return self:GetPos():WithinAABox(impulse.Config.SpawnPos1, impulse.Config.SpawnPos2)
 end
 
+--- @module impulse
+
+--- Converts a vector to a string representation
+-- @realm shared
+-- @tparam vector pos The position vector
+-- @treturn number Bearing in degrees
 function impulse.AngleToBearing(ang)
     return math.Round(360 - (ang.y % 360))
 end
 
+--- Converts a position vector to a string representation
+-- @realm shared
+-- @tparam vector pos The position vector
+-- @treturn string Position in the format "x|y|z"
 function impulse.PosToString(pos)
     return pos.x.."|"..pos.y.."|"..pos.x
 end
@@ -125,6 +153,8 @@ local function OrganizeNotices(i)
         lastHeight = height
     end
 end
+
+--- @classmod Player
 
 --- Sends a notification to a player
 -- @realm shared
@@ -167,7 +197,24 @@ function meta:Notify(message)
     end
 end
 
+--- Returns if the player has a female character
+-- @realm shared
+-- @treturn bool Is female
+function meta:IsCharacterFemale()
+    if SERVER then
+        return self:IsFemale(self.defaultModel)
+    else
+        return self:IsFemale(impulse_defaultModel)
+    end
+end
+
 local modelCache = {}
+
+--- @classmod Entity
+
+--- Checks if Entity is female
+--@realm shared
+--@string modelov model
 function eMeta:IsFemale(modelov)
     local model = modelov or self:GetModel()
 
@@ -186,17 +233,12 @@ function eMeta:IsFemale(modelov)
     return false
 end
 
---- Returns if the player has a female character
--- @realm shared
--- @treturn bool Is female
-function meta:IsCharacterFemale()
-    if SERVER then
-        return self:IsFemale(self.defaultModel)
-    else
-        return self:IsFemale(impulse_defaultModel)
-    end
-end
+--- @module impulse
 
+--- Finds a player by their SteamID, name, or Steam name
+-- @realm shared
+-- @string searchKey The search key (SteamID, name, or Steam name)
+-- @treturn Player|nil The player if found, otherwise nil
 function impulse.FindPlayer(searchKey)
     if not searchKey or searchKey == "" then return nil end
     local searchPlayers = player.GetAll()
@@ -220,6 +262,10 @@ function impulse.FindPlayer(searchKey)
     return nil
 end
 
+--- Cleans a string by removing non-alphanumeric characters
+-- @realm shared
+-- @string str The string to clean
+-- @treturn string The cleaned string
 function impulse.SafeString(str)
     local pattern = "[^0-9a-zA-Z%s]+"
     local clean = tostring(str)
@@ -271,6 +317,10 @@ local idleZombVO = {
     "npc/zombie/zombie_voice_idle7.wav"
 }
 
+--- Returns a random ambient voiceover based on the player's
+-- @realm shared
+-- @string gender Gender of the player ("male", "fisherman", "cp", "zombie")
+-- @treturn string The path to the random ambient voiceover sound 
 function impulse.GetRandomAmbientVO(gender)
     if gender == "male" then
         return "vo/npc/male01/"..idleVO[math.random(1, #idleVO)]

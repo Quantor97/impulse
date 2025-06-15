@@ -1,3 +1,5 @@
+--- @classmod Player
+
 impulse.Arrest = impulse.Arrest or {}
 impulse.Arrest.Dragged = impulse.Arrest.Dragged or {}
 impulse.Arrest.Prison = impulse.Arrest.Prison or {}
@@ -5,6 +7,8 @@ impulse.Arrest.DCRemember = impulse.Arrest.DCRemember or {}
 
 util.AddNetworkString("impulseSendJailInfo")
 
+--- Arrests the player: strips weapons and sets them as arrested
+-- @realm server
 function meta:Arrest()
 	self.ArrestedWeapons = {}
 	for v,k in pairs(self:GetWeapons()) do
@@ -20,6 +24,8 @@ function meta:Arrest()
 	self:SetSyncVar(SYNC_ARRESTED, true, true)
 end
 
+--- Unarrests the player: restores weapons and default movement state
+-- @realm server
 function meta:UnArrest()
 	self:SetSyncVar(SYNC_ARRESTED, false, true)
 
@@ -40,6 +46,9 @@ function meta:UnArrest()
 	self:StripAmmo()
 end
 
+--- Starts dragging an arrested player
+-- @tparam Player ply player to drag
+-- @realm server
 function meta:DragPlayer(ply)
 	if self:CanArrest(ply) and ply:GetSyncVar(SYNC_ARRESTED, false) then
 		ply.ArrestedDragger = self
@@ -50,6 +59,8 @@ function meta:DragPlayer(ply)
 	end
 end
 
+--- Stops dragging a player
+-- @realm server
 function meta:StopDrag()
 	impulse.Arrest.Dragged[self] = nil
 
@@ -61,6 +72,10 @@ function meta:StopDrag()
 	self.ArrestedDragger = nil
 end
 
+--- Sends jail duration and optional data to the client
+-- @int time Duration in seconds
+-- @tab[opt] jailData Optional extra jail data
+-- @realm server
 function meta:SendJailInfo(time, jailData)
 	net.Start("impulseSendJailInfo")
 	net.WriteUInt(time, 16)
@@ -75,6 +90,10 @@ function meta:SendJailInfo(time, jailData)
 	net.Send(self)
 end
 
+--- Jails the player into a prison cell
+-- @int time Duration in seconds
+-- @tab[opt] jailData Optional metadata about the jailing
+-- @realm server
 function meta:Jail(time, jailData)
 	local doCellMates = false
 	local pos
@@ -144,6 +163,8 @@ function meta:Jail(time, jailData)
 	end
 end
 
+--- Releases the player from jail and respawns them
+-- @realm server
 function meta:UnJail()
 	impulse.Arrest.Prison[self.InJail][self:EntIndex()] = nil
 	self.InJail = nil

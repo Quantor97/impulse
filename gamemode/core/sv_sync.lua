@@ -1,5 +1,4 @@
---- A fast entity based synchronous networking system
--- @module Sync
+--- @classmod Entity
 
 util.AddNetworkString("iSyncU")
 util.AddNetworkString("iSyncUlcl")
@@ -8,7 +7,10 @@ util.AddNetworkString("iSyncRvar")
 
 local entMeta = FindMetaTable("Entity")
 
--- target is optional. Sync will take the player and sync their all SyncVars with all clients or the single target if provided.
+--- Sends all SyncVars of this entity to either all players or a specific target (if provided).
+-- Skips variables with conditions that fail.
+-- @realm server
+-- @tparam[opt] Player target Specific player to sync to
 function entMeta:Sync(target)
 	local targetID = self:EntIndex()
 	local syncUser = impulse.Sync.Data[targetID]
@@ -80,7 +82,11 @@ function entMeta:Sync(target)
 	end
 end
 
--- target is optional. SyncSingle will take the player and sync the SyncVar provided with all clients or the single target if provided.
+--- Sends a single SyncVar to either all players or a specific target.
+-- Skips variables with conditions that fail.
+-- @realm server
+-- @int varID ID of the SyncVar to sync
+-- @tparam[opt] Player target Specific player to sync to
 function entMeta:SyncSingle(varID, target)
 	local targetID = self:EntIndex()
 	local syncUser = impulse.Sync.Data[targetID]
@@ -150,7 +156,7 @@ function entMeta:SyncSingle(varID, target)
 	end
 end
 
---- Removes all SyncVar's from an entity and update all players
+--- Removes all SyncVars from the entity and notifies all players.
 -- @realm server
 function entMeta:SyncRemove()
 	local targetID = self:EntIndex()
@@ -163,9 +169,9 @@ function entMeta:SyncRemove()
 end
 
 
---- Removes a specific SyncVar from an entity and update all players
+--- Removes a specific SyncVar from the entity and notifies all players.
 -- @realm server
--- @int varID Sync variable
+-- @int varID ID of the SyncVar to remove
 function entMeta:SyncRemoveVar(varID)
 	local targetID = self:EntIndex()
 
@@ -179,12 +185,12 @@ end
 
 -- instantSync is optional. SetSyncVar will set the SyncVar however it will not update it with all clients unless instantSync is true.
 
---- Sets the Sync var on an entity
+--- Sets a SyncVar on the entity. Optionally syncs immediately to all clients.
 -- @realm server
--- @int varID Sync variable (EG: SYNC_MONEY)
--- @param value Value to set
--- @bool[opt=false] instantSync If we should network this to all players
--- @usage ply:SetSyncVar(SYNC_XP, 60, true) -- sets money to 60 and networks the new value to all players
+-- @int varID SyncVar ID (e.g., `SYNC_MONEY`)
+-- @param newValue Value to store
+-- @bool[opt=false] instantSync Whether to immediately network the value
+-- @usage ply:SetSyncVar(SYNC_XP, 60, true) -- sets XP to 60 and broadcasts to all players
 function entMeta:SetSyncVar(varID, newValue, instantSync)
 	local targetID = self:EntIndex()
 	local targetData = impulse.Sync.Data[targetID]
@@ -208,7 +214,7 @@ end
 --- Sets the Sync var on an entity but only updates the player who it is being set on
 -- @realm server
 -- @int varID Sync variable (EG: SYNC_MONEY)
--- @param value Value to set
+-- @param newValue Value to set
 -- @usage ply:SetLocalSyncVar(SYNC_BANKMONEY, 600)
 function meta:SetLocalSyncVar(varID, newValue)
 	local targetID = self:EntIndex()
@@ -218,6 +224,12 @@ function meta:SetLocalSyncVar(varID, newValue)
 	self:SyncSingle(varID, self)
 end
 
+--- Gets the value of a SyncVar on the entity.
+-- Returns the fallback if the variable is not set.
+-- @realm server
+-- @int varID SyncVar ID
+-- @param fallback Value to return if SyncVar is not set
+-- @return any Stored value or fallback
 function entMeta:GetSyncVar(varID, fallback)
 	local targetData = impulse.Sync.Data[self.EntIndex(self)]
 

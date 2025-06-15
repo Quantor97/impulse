@@ -1,3 +1,6 @@
+--- Handles NPC and player relationship logic for teams and synchronization
+-- @module impulse.Relationships
+
 impulse.Relationships = impulse.Relationships or {}
 impulse.Relationships.Players = impulse.Relationships.Players or {}
 impulse.Relationships.NPCS = impulse.Relationships.NPCS or {}
@@ -10,6 +13,11 @@ local function StoreDefaultRelationship(npc)
 	npc.DefaultRelationship = npc:Disposition(player.GetAll()[1]) or 1
 end
 
+--- Finds the disposition type of an NPC toward a player based on team settings
+-- @param ply player The player
+-- @string npcclass The NPC class name
+-- @treturn number Disposition constant (e.g., D_HT, D_LI, etc.)
+-- @realm server
 function impulse.Relationships.Find(ply, npcclass)
 	local t = ply:Team()
 	local tData = impulse.Teams.Data[t]
@@ -21,6 +29,9 @@ function impulse.Relationships.Find(ply, npcclass)
 	return impulse.Relationships.Defaults[npcclass] or D_NU
 end
 
+--- Synchronizes a spawned NPC's relationship toward tracked players
+-- @param npc entity The NPC to sync
+-- @realm server
 function impulse.Relationships.SyncNPC(npc)
 	if player.GetCount() > 1 then
 		for v,k in pairs(impulse.Relationships.Players) do
@@ -35,6 +46,9 @@ function impulse.Relationships.SyncNPC(npc)
 	table.insert(impulse.Relationships.NPCS, npc)
 end
 
+--- Placeholder for syncing relationships to a player (currently unused)
+-- @realm server
+-- @internal
 function impulse.Relationships.SyncPlayer()
 
 end

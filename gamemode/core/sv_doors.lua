@@ -1,3 +1,6 @@
+--- System for managing map-based doors, including ownership, locking, group access and saving/loading state
+-- @module impulse.Doors
+
 impulse.Doors = impulse.Doors or {}
 impulse.Doors.Data = impulse.Doors.Data or {}
 
@@ -6,6 +9,8 @@ local fileName = "impulse/doors/"..game.GetMap()
 
 file.CreateDir("impulse/doors")
 
+--- Saves the current door configuration to a data file
+-- @realm server
 function impulse.Doors.Save()
 	local doors = {}
 
@@ -26,6 +31,8 @@ function impulse.Doors.Save()
 	file.Write(fileName..".dat", util.TableToJSON(doors))
 end
 
+--- Loads door data from file and applies it to map doors
+-- @realm server
 function impulse.Doors.Load()
 	impulse.Doors.Data = {}
 
@@ -86,10 +93,16 @@ function impulse.Doors.Load()
 	hook.Run("DoorsSetup")
 end
 
+--- @classmod Entity
+
+--- Locks the door entity using map I/O
+-- @realm server
 function eMeta:DoorLock()
 	self:Fire("lock", "", 0)
 end
 
+--- Unlocks the door entity and opens it if necessary
+-- @realm server
 function eMeta:DoorUnlock()
 	self:Fire("unlock", "", 0)
 	if self:GetClass() == "func_door" then
@@ -97,10 +110,18 @@ function eMeta:DoorUnlock()
 	end
 end
 
+--- Returns the master owner of this door
+-- @return player Master owner or nil
+-- @realm server
 function eMeta:GetDoorMaster()
 	return self.MasterUser
 end
 
+--- @classmod Player
+
+--- Sets the player as the master owner of the given door
+-- @param door entity Door to assign
+-- @realm server
 function meta:SetDoorMaster(door)
 	local owners = {self:EntIndex()}
 
@@ -115,6 +136,10 @@ function meta:SetDoorMaster(door)
 	end)
 end
 
+--- Removes the player as the master owner of the door
+-- @param door entity Door to unassign
+-- @bool[opt] noUnlock If true, prevents unlocking the door
+-- @realm server
 function meta:RemoveDoorMaster(door, noUnlock)
 	local owners = door:GetSyncVar(SYNC_DOOR_OWNERS)
 	door:SetSyncVar(SYNC_DOOR_OWNERS, nil, true)
@@ -133,6 +158,9 @@ function meta:RemoveDoorMaster(door, noUnlock)
 	end
 end
 
+--- Adds the player as an additional user of the door
+-- @param door entity Door to add user to
+-- @realm server
 function meta:SetDoorUser(door)
 	local doorOwners = door:GetSyncVar(SYNC_DOOR_OWNERS)
 
@@ -147,6 +175,9 @@ function meta:SetDoorUser(door)
 	self.OwnedDoors[door] = true
 end
 
+--- Removes the player from the door's user list
+-- @param door entity Door to remove user from
+-- @realm server
 function meta:RemoveDoorUser(door)
 	local doorOwners = door:GetSyncVar(SYNC_DOOR_OWNERS)
 

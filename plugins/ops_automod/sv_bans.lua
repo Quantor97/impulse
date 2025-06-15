@@ -49,12 +49,18 @@ function impulse.Ops.AutoMod.Ban(ply, reason, risk, details)
     opsDiscordLog("<@&"..impulse.Config.DiscordLeadModRoleID..">", embeds)
 end
 
+--- Adds a message to the player's automatic moderation log.
+-- @realm server
+-- @string msg The message to log
 function meta:AutoModLogAdd(msg)
     self.AutoModLog = self.AutoModLog or {}
 
     table.insert(self.AutoModLog, "["..os.date("%H:%M:%S", os.time()).."] "..msg)
 end
 
+--- Retrieves the player's automatic moderation log as a newline-separated string.
+-- @realm server
+-- @treturn string The full moderation log
 function meta:AutoModLogGet()
     local o = ""
     for v,k in pairs(self.AutoModLog or {}) do

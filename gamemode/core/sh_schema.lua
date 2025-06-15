@@ -1,5 +1,5 @@
 --- Allows for control of the boot process of the schema such as piggybacking from other schemas
--- @module Schema
+-- @module impulse.Schema
 
 impulse.Schema = impulse.Schema or {}
 HOOK_CACHE = {}

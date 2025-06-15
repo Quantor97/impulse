@@ -1,0 +1,16 @@
+
+<div class="landing">
+	<h1>Impulse Documentation</h1>
+</div>
+
+<div class="wrapper">
+	<h1 style="text-align: center;">Welcome to the Impulse Documentation</h1>
+
+	<p style="text-align: center;">
+		This documentation is based on the <strong>LuaDoc template</strong> originally developed for the <a href="https://github.com/NebulousCloud/helix" target="_blank" rel="noopener">Helix Framework</a>.
+	</p>
+
+	<p style="text-align: center;">
+		All credits for the original design and structure go to the Helix team. We have adapted it to suit the needs of the Impulse project.
+	</p>
+</div>

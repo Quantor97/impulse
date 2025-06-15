@@ -1,7 +1,12 @@
+--- @module impulse
 
 impulse.chatCommands = impulse.chatCommands or {}
 impulse.chatClasses = impulse.chatClasses or {}
 
+--- Registers a chat command
+--@realm shared
+--@string name Name of the command
+--@tparam table cmdData data
 function impulse.RegisterChatCommand(name, cmdData)
 	if not cmdData.adminOnly then cmdData.adminOnly = false end
 	if not cmdData.leadAdminOnly then cmdData.leadAdminOnly = false end
@@ -15,6 +20,11 @@ end
 
 if SERVER then
 	util.AddNetworkString("impulseChatNetMessage")
+	--- Sends a chat class message to the player
+	-- @realm server
+	-- @int id Chat class ID
+	-- @string message The message content
+	-- @tparam[opt] Player target Optional target entity (used for context in some handlers)
 	function meta:SendChatClassMessage(id, message, target)
 		net.Start("impulseChatNetMessage")
 		net.WriteUInt(id, 8)
@@ -25,6 +35,10 @@ if SERVER then
 		net.Send(self)
 	end
 else
+	--- Registers a clientside chat class handler
+	-- @realm client
+	-- @int id Chat class ID
+	-- @tparam function onReceive Function to handle incoming messages (called with: `message`, `optionalTarget`)
 	function impulse.RegisterChatClass(id, onReceive)
 		impulse.chatClasses[id] = onReceive
 	end

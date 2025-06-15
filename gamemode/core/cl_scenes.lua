@@ -1,3 +1,6 @@
+--- Client-side scene system for playing cinematic sequences with camera control and optional text
+-- @module impulse.Scenes
+
 impulse.Scenes = impulse.Scenes or {}
 
 local function hideEnts(hide, hidePlayers)
@@ -32,6 +35,13 @@ local function hideEnts(hide, hidePlayers)
 	end
 end
 
+--- Plays a single cinematic scene.
+-- @realm client
+-- @int stage Stage number of the scene
+-- @tab sceneData Table containing scene configuration
+-- @func[opt] onDone Callback called when scene ends
+-- @bool[opt] skipPVS If true, skips sending PVS update to server
+-- @func[opt] preLoad Callback called shortly before the scene ends (used to preload next scene)
 function impulse.Scenes.Play(stage, sceneData, onDone, skipPVS, preLoad)
 	impulse.Scenes.pos = nil
 	impulse.Scenes.ang = nil
@@ -143,6 +153,11 @@ function impulse.Scenes.Play(stage, sceneData, onDone, skipPVS, preLoad)
 	impulse.hudEnabled = false
 end
 
+--- Plays a set of scenes in sequence with optional music
+-- @realm client
+-- @tab set A table of sceneData tables
+-- @string[opt] music Either a sound path or a web link
+-- @func[opt] onDone Called when all scenes in the set are complete
 function impulse.Scenes.PlaySet(set, music, onDone)
 	local counter = 1
 

@@ -1,5 +1,4 @@
---- Allows interactions with the players inventory
--- @module Inventory
+--- @module impulse
 
 impulse.Inventory = impulse.Inventory or {}
 impulse.Inventory.Data = impulse.Inventory.Data or {}
@@ -23,7 +22,6 @@ local countX = 1
 --- Registers a new inventory item
 -- @realm shared
 -- @param itemData Item data
--- @internal
 function impulse.RegisterItem(item)
 	local class = item.WeaponClass
 	local attClass = item.AttachmentClass
@@ -118,7 +116,6 @@ end
 --- Registers a new workbench
 -- @realm shared
 -- @param benchData Bench data
--- @internal
 function impulse.RegisterBench(bench)
 	local class = bench.Class
 
@@ -129,7 +126,6 @@ end
 --- Registers a new mixture
 -- @realm shared
 -- @param mixData Mixture data
--- @internal
 function impulse.RegisterMixture(mix)
 	local class = mix.Class
 	local bench = mix.Bench
@@ -140,6 +136,8 @@ function impulse.RegisterMixture(mix)
 	impulse.Inventory.MixturesRef[countX] = {bench, class}
 	countX = countX + 1
 end
+
+--- @module impulse.Inventory
 
 --- Used to convert the class to the item's NetID (or table ref)
 -- @realm shared
@@ -209,6 +207,8 @@ function impulse.Inventory.PickRandomCraftSound(crafttype)
 
 	return "impulse/craft/"..crafttype.."/"..math.random(1, max)..".wav"
 end
+
+--- @classmod Player
 
 --- Returns the max capacity of the players storage box
 -- @realm shared

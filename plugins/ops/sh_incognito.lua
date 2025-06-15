@@ -1,3 +1,8 @@
+---@classmod Player
+
+--- Checks whether the player is in incognito mode.
+-- @realm shared
+-- @treturn boolean True if the player is incognito, false otherwise
 function meta:IsIncognito()
 	return self:GetSyncVar(SYNC_INCOGNITO, false)
 end

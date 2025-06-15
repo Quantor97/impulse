@@ -1,3 +1,9 @@
+--- @classmod Player
+
+--- Returns the player's current XP value for a given skill
+-- @realm server
+-- @string name Name of the skill
+-- @treturn int Current XP value (defaults to 0 if undefined)
 function meta:GetSkillXP(name)
 	local skills = self.impulseSkills
 	if not skills then return end
@@ -9,6 +15,11 @@ function meta:GetSkillXP(name)
 	end
 end
 
+--- Sets the XP value for a given skill and saves it to the database
+-- Also sends the updated XP to the client.
+-- @realm server
+-- @string name Skill name
+-- @int value New XP value (rounded)
 function meta:SetSkillXP(name, value)
 	if not self.impulseSkills then return end
 	if not impulse.Skills.Skills[name] then return end
@@ -29,6 +40,11 @@ function meta:SetSkillXP(name, value)
 	self:NetworkSkill(name, value)
 end
 
+--- Sends the player's XP for a single skill to their client
+-- @realm server
+-- @string name Skill name
+-- @int value XP value
+-- @internal
 function meta:NetworkSkill(name, value)
 	net.Start("impulseSkillUpdate")
 	net.WriteUInt(impulse.Skills.Skills[name], 4)
@@ -36,6 +52,10 @@ function meta:NetworkSkill(name, value)
 	net.Send(self)
 end
 
+--- Adds XP to a skill and triggers relevant updates and hooks
+-- @realm server
+-- @string name Skill name
+-- @int value Amount of XP to add
 function meta:AddSkillXP(name, value)
 	if not self.impulseSkills then return end
 

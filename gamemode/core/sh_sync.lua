@@ -1,5 +1,5 @@
 --- A fast entity based synchronous networking system
--- @module Sync
+-- @module impulse.Sync
 
 -- This is Sync version 4 by vin.
 -- Sync V3 has massive networking speed improvements over sync V2, however these improvements require a bit more effort on the coders part
@@ -75,6 +75,9 @@ function impulse.Sync.DoType(type, value)
 end
 
 if CLIENT then
+	---
+	-- @classmod Entity
+
 	--- Gets the Sync variable on an entity
 	-- @realm shared
 	-- @int varID Sync variable (EG: SYNC_MONEY)

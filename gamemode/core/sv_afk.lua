@@ -1,3 +1,8 @@
+--- 
+-- @classmod Player
+
+--- Marks the player as AFK and optionally kicks or demotes them based on server conditions
+-- @realm server
 function meta:MakeAFK()
 	if self.AFKImmune then
 		return
@@ -25,11 +30,16 @@ function meta:MakeAFK()
 	end
 end
 
+--- Removes the AFK state from the player
+-- @realm server
 function meta:UnMakeAFK()
 	self.AFKState = false
 	self:Notify("You have returned from being AFK.")
 end
 
+--- Checks whether the player is currently AFK
+-- @return boolean True if the player is AFK
+-- @realm server
 function meta:IsAFK()
 	return self.AFKState or false
 end

@@ -1,3 +1,10 @@
+--- @module impulse
+
+--- Checks whether a position is empty and free of blocking entities
+-- @param vector vector The position to check
+-- @param[opt] ignore table A list of entities to ignore
+-- @treturn bool True if the position is free
+-- @realm server
 function impulse.IsEmpty(vector, ignore) -- findpos and isempty are from darkrp
     ignore = ignore or {}
 
@@ -21,6 +28,14 @@ function impulse.IsEmpty(vector, ignore) -- findpos and isempty are from darkrp
 	return a and b
 end
 
+--- Finds an empty nearby position starting from a base point
+-- @param pos vector Starting position
+-- @param ignore table List of entities to ignore
+-- @param distance number Maximum distance to search
+-- @param step number Step size between checks
+-- @param area vector Bounding area offset (e.g. Vector(16, 16, 64))
+-- @treturn vector The first valid empty position
+-- @realm server
 function impulse.FindEmptyPos(pos, ignore, distance, step, area)
     if impulse.IsEmpty(pos, ignore) and impulse.IsEmpty(pos + area, ignore) then
         return pos
@@ -50,6 +65,10 @@ function impulse.FindEmptyPos(pos, ignore, distance, step, area)
     return pos
 end
 
+--- @classmod Player
+
+--- Sends the player's default model and skin to the client
+-- @realm server
 function meta:UpdateDefaultModelSkin()
     net.Start("impulseUpdateDefaultModelSkin")
     net.WriteString(self.defaultModel)
@@ -58,6 +77,11 @@ function meta:UpdateDefaultModelSkin()
 end
 
 -- divert from slow nwvar shit
+
+--- Returns the number of spawned props for this player
+-- @bool[opt] skip If true, skips syncing the value to client
+-- @treturn number Number of valid props
+-- @realm server
 function meta:GetPropCount(skip)
     if ( !self:IsValid() ) then return end
 
@@ -86,6 +110,9 @@ function meta:GetPropCount(skip)
     return c
 end
 
+--- Registers a spawned prop to the player's prop tracking system
+-- @param ent entity The prop entity to track
+-- @realm server
 function meta:AddPropCount(ent)
     local key = self:UniqueID()
     g_SBoxObjects[ key ] = g_SBoxObjects[ key ] or {}
@@ -100,6 +127,8 @@ function meta:AddPropCount(ent)
     ent:CallOnRemove("GetPropCountUpdate", function(ent, ply) ply:GetPropCount() end, self)
 end
 
+--- Resets any submaterials applied to the player model
+-- @realm server
 function meta:ResetSubMaterials()
     if not self.SetSubMats then
         return

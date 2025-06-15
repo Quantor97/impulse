@@ -1,5 +1,11 @@
---- A generic module that holds anything that doesnt fit elsewhere
--- @module Misc
+--[[--
+Top-level library containing all impulse libraries.
+
+**NOTE:** 
+For some reason LDoc has issues to properly label the functions correctly.
+Each function belongs to the `impulse` table!
+]]
+--- @module impulse
 
 function GM:ForceDermaSkin()
 	return "impulse"

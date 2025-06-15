@@ -1,3 +1,6 @@
+--- Main shared bootstrap for the impulse gamemode.
+-- @module impulse.lib
+
 -- Define gamemode information.
 GM.Name = "impulse"
 GM.Author = "vin"
@@ -28,6 +31,9 @@ end
 
 hook.Remove("PlayerTick", "TickWidgets")
 
+--- Loads and includes a Lua file depending on its prefix (`sv_`, `sh_`, `cl_`, `rq_`).
+-- @tparam string fileName File path relative to the game mode base
+-- @realm shared
 function impulse.lib.LoadFile(fileName)
 	if (!fileName) then
 		error("[impulse] File to include has no name!")
@@ -57,6 +63,12 @@ function impulse.lib.LoadFile(fileName)
 	end
 end
 
+--- Includes all Lua files in a directory using LoadFile or hooks.
+-- @tparam string directory The directory to include from
+-- @bool[opt=false] hookMode Whether to hook load files via Schema hooks
+-- @param[opt] variable Hook variable passed to Schema
+-- @param[opt] uid Hook UID
+-- @realm shared
 function impulse.lib.includeDir(directory, hookMode, variable, uid)
 	for k, v in ipairs(file.Find(directory.."/*.lua", "LUA")) do
     	if hookMode then
@@ -142,6 +154,10 @@ impulse.lib.includeDir("impulse/gamemode/core/vgui")
 -- Load hooks
 impulse.lib.includeDir("impulse/gamemode/core/hooks")
 
+--- @module impulse
+
+--- Triggers a reload of the core framework and all plugins.
+-- @realm shared
 function impulse.reload()
 	GM = GM or GAMEMODE
     MsgC( Color( 83, 143, 239 ), "[impulse] Reloading gamemode...\n" )
@@ -152,6 +168,8 @@ function impulse.reload()
 	GM = nil
 end
 
+--- Reloads all plugins from `impulse/plugins/`.
+-- @realm shared
 function impulse.reloadPlugins()
 	local files, folders = file.Find("impulse/plugins/*", "LUA")
 

@@ -1,3 +1,7 @@
+--- @classmod Player
+
+--- Breaks the player's legs, disabling certain movement and triggering effects
+-- @realm server
 function meta:BreakLegs()
 	self.BrokenLegsTime = CurTime() + impulse.Config.BrokenLegsHealTime -- reset heal time
 
@@ -14,6 +18,8 @@ function meta:BreakLegs()
 	hook.Run("PlayerLegsBroken", self)
 end
 
+--- Fixes the player's legs, restoring normal movement
+-- @realm server
 function meta:FixLegs()
 	self:SetSyncVar(SYNC_BROKENLEGS, false, true)
 	self.BrokenLegs = false

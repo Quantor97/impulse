@@ -1,5 +1,4 @@
---- Allows interactions with the players inventory
--- @module Inventory
+--- @module impulse.Inventory
 
 INV_CONFISCATED = 0
 INV_PLAYER = 1
@@ -124,6 +123,8 @@ function impulse.Inventory.SpawnBench(class, pos, ang)
 
 	return bench
 end
+
+--- @classmod Player
 
 --- Gets a players inventory table
 -- @realm server

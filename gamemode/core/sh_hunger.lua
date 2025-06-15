@@ -1,5 +1,5 @@
 --- Helper functions for the players hunger
--- @module Hunger
+-- @classmod Player
 
 if SERVER then
 	--- Set the hunger amount of a player

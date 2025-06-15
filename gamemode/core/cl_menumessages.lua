@@ -1,5 +1,5 @@
 --- Allows for the creation of persistent menu messages similar in style to CS:GO's menu notifications
--- @module MenuMessage
+-- @module impulse.MenuMessage
 
 file.CreateDir("impulse/menumsgs")
 
@@ -67,6 +67,7 @@ end
 -- @realm client
 -- @string uid Unique name
 -- @internal
+-- @treturn bool True if the message can be seen, false otherwise
 function impulse.MenuMessage.CanSee(uid)
 	local msg = impulse.MenuMessage.Data[uid]
 

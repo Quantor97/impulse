@@ -1,3 +1,12 @@
+--[[--
+Handles cross-server communication via signal database.
+
+Allows sending and receiving arbitrary data packets ("signals") between servers using MySQL.
+Signals are stored in the `impulse_signals` table and automatically dispatched on a timer.
+
+]]
+-- @module impulse.Signals
+
 impulse.Signals = impulse.Signals or {}
 impulse.Signals.Hooks = impulse.Signals.Hooks or {}
 
@@ -21,6 +30,12 @@ if YML.signals then
 	end
 end
 
+--- Sends a signal to another server or all servers
+-- @realm server
+-- @string class Identifier name for the signal
+-- @tparam table data Table of data to send (will be PON encoded)
+-- @int[opt=0] to Destination server ID (0 = all)
+-- @int[opt=0] delay Delay in seconds before dispatching the signal
 function impulse.Signals.Send(class, data, to, delay)
 	if not db then
 		return print("[impulse] Trying to call Signals.Send with no signal database setup!")	
@@ -36,6 +51,9 @@ function impulse.Signals.Send(class, data, to, delay)
 	query:start()
 end
 
+--- Reads and deletes all queued signals addressed to this server or broadcast (dest=0)
+-- @realm server
+-- @tparam function onDone Callback function receiving a result table (may be empty)
 function impulse.Signals.ReadAll(onDone)
 	local query = db:query("DELETE FROM `impulse_signals` WHERE wait <= "..os.time().." AND (dest = "..SIGNAL_SERVERID.." OR dest = 0) RETURNING *")
 	query:start()
@@ -49,6 +67,10 @@ function impulse.Signals.ReadAll(onDone)
 	end
 end
 
+--- Registers a callback for a specific signal class
+-- @realm server
+-- @string class Identifier name of the signal to listen for
+-- @tparam function func Function that takes one argument (decoded data table)
 function impulse.Signals.Hook(class, func)
 	impulse.Signals.Hooks[class] = func
 end

@@ -1,5 +1,5 @@
 --- Functions to control a player's animations, based heavily on nutscript's Anim system
--- @module Anim
+-- @module impulse.Anim
 
 -- this animation system is HEAVILY based on nutscripts system with partial recodes or changes to suit impulse.
 -- i claim no credit for this
@@ -427,8 +427,11 @@ ALWAYS_RAISED["weapon_physgun"] = true
 ALWAYS_RAISED["gmod_tool"] = true
 
 do
-	--- Plays an animation sequence on a player
-	-- @realm server
+	---
+	-- @classmod Player
+
+ 	--- Forces the player to play a specific animation sequence.
+	-- @realm shared
     -- @string sequence The sequence name
     -- @func[opt] callback Called when the animation is completed
     -- @int[opt] time How long until we force the sequence to stop
@@ -477,6 +480,9 @@ do
 		return false
 	end
 
+	--- Ends a previously animation sequence.
+	-- Resets movement and executes the stored callback.
+	-- @realm server
 	function meta:leaveSequence()
 		hook.Run("OnPlayerLeaveSequence", self)
 
@@ -494,6 +500,9 @@ do
 		end
 	end
 
+	--- Returns whether the currently held weapon is raised.
+	-- @realm shared
+	-- @treturn bool Whether the weapon is considered raised
 	function meta:IsWeaponRaised()
 		local weapon = self.GetActiveWeapon(self)
 
@@ -511,6 +520,9 @@ do
 	if SERVER then
 		util.AddNetworkString("impulseSeqSet")
 		
+		--- Sets the weapon raised/lowered state.
+		-- @realm server
+		-- @bool state True to raise the weapon, false to lower it
 		function meta:SetWeaponRaised(state)
 			self:SetSyncVar(SYNC_WEPRAISED, state, true)
 
@@ -526,6 +538,8 @@ do
 			end
 		end
 
+		--- Toggles the current weapon raised/lowered state.
+		-- @realm server
 		function meta:ToggleWeaponRaised()
 			self:SetWeaponRaised(!self:IsWeaponRaised())
 		end

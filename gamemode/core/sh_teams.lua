@@ -1,3 +1,6 @@
+---
+-- @module impulse.Teams
+
 impulse.Teams = impulse.Teams or {}
 impulse.Teams.Data = impulse.Teams.Data or {}
 impulse.Teams.ClassRef = impulse.Teams.ClassRef or {}
@@ -6,6 +9,10 @@ teamID = 0
 
 CLASS_EMPTY = 0
 
+--- Defines a new team
+-- @param teamData Table containing team configuration
+-- @return number The assigned team ID
+-- @realm shared
 function impulse.Teams.Define(teamData)
     teamID = teamID + 1
     impulse.Teams.Data[teamID] = teamData
@@ -31,6 +38,13 @@ function impulse.Teams.Define(teamData)
     return teamID
 end
 
+--- @classmod Player
+
+--- Checks if the player is allowed to join a team
+-- @param teamID The team ID to join
+-- @bool[opt] notify Whether to notify the player with a message
+-- @return boolean True if the player can become this team
+-- @realm shared
 function meta:CanBecomeTeam(teamID, notify)
 	local teamData = impulse.Teams.Data[teamID]
 	local teamPlayers = team.NumPlayers(teamID)
@@ -94,6 +108,11 @@ function meta:CanBecomeTeam(teamID, notify)
 	return true
 end
 
+--- Checks if the player is allowed to become a team class
+-- @realm shared
+-- @string classID The class ID to check
+-- @bool[opt] notify Whether to notify the player with a message
+-- @return boolean True if the player can become this class
 function meta:CanBecomeTeamClass(classID, notify)
 	local teamData = impulse.Teams.Data[self:Team()]
 	local classData = teamData.classes[classID]
@@ -148,6 +167,11 @@ function meta:CanBecomeTeamClass(classID, notify)
 	return true
 end
 
+--- Checks if player can become team rank
+-- @realm shared
+-- @string rankID The rank ID to check
+-- @bool[opt] notify Whether to notify the player with a message
+-- @return boolean True if the player can become this rank
 function meta:CanBecomeTeamRank(rankID, notify)
 	local teamData = impulse.Teams.Data[self:Team()]
 	local rankData = teamData.ranks[rankID]
@@ -201,6 +225,9 @@ function meta:CanBecomeTeamRank(rankID, notify)
 	return true
 end
 
+--- Gets the class name the player currently belongs to
+-- @return string Class ID (Default: "Default")
+-- @realm shared
 function meta:GetTeamClassName()
 	if not impulse.Teams.Data[self:Team()] then return "" end
 
@@ -214,10 +241,16 @@ function meta:GetTeamClassName()
 	return "Default"
 end
 
+--- Gets the display name of the player's current team rank
+-- @return string Team rank name or "Default" if unavailable
+-- @realm shared
 function meta:GetTeamClass()
 	return self:GetSyncVar(SYNC_CLASS, 0)
 end
 
+--- Gets the rank name the player currently belongs to
+-- @return string Rank name (Default: "default")
+-- @realm shared
 function meta:GetTeamRankName()
 	local rankData = impulse.Teams.Data[self:Team()].ranks
 	local plyRank = self:GetSyncVar(SYNC_RANK, nil)
@@ -229,10 +262,16 @@ function meta:GetTeamRankName()
 	return "Default"
 end
 
+--- Gets the rank ID the player currently belongs to
+-- @return number Rank ID (default 0)
+-- @realm shared
 function meta:GetTeamRank()
 	return self:GetSyncVar(SYNC_RANK, 0)
 end
 
+--- Checks whether the player's team is considered civil protection (CP)
+-- @return boolean True if the team is CP, false otherwise
+-- @realm shared
 function meta:IsCP()
 	local teamData = impulse.Teams.Data[self:Team()]
 

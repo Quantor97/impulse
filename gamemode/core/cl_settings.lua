@@ -1,5 +1,4 @@
---- Allows the creation, updating and reading of persistent settings
--- @module Setting
+--- @module impulse
 
 impulse.Settings = impulse.Settings or {}
 impulse.AdvSettings = impulse.AdvSettings or {}
@@ -19,7 +18,7 @@ impulse.AdvSettings = impulse.AdvSettings or {}
 --- Defines a new setting for use - only call this inside the DefineSettings hook
 -- @realm client
 -- @string name Setting class name
--- @param settingData A table containg setting data (see below)
+-- @tparam settingData data A table containg setting data (see below)
 -- @see SettingData
 function impulse.DefineSetting(name, settingdata)
 	impulse.Settings[name] = settingdata

@@ -1,5 +1,4 @@
---- Helper functions to control the achievement system
--- @module Achievement
+--- @classmod Player
 
 impulse.Achievements = impulse.Achievements or {}
 

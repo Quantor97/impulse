@@ -1,3 +1,6 @@
+--- Group system logic shared between client and server.
+-- @classmod Player
+
 impulse.Group = impulse.Group or {}
 impulse.Group.Groups = impulse.Group.Groups or {}
 impulse.Group.Invites = impulse.Group.Invites or {}
@@ -15,6 +18,11 @@ RPGROUP_PERMISSIONS = {
 	--[8] = ""
 }
 
+--- Checks whether the player has a specific group permission.
+-- @realm shared
+-- @player player
+-- @int act The permission ID to check
+-- @treturn bool True if player has the permission
 function meta:GroupHasPermission(act)
 	local group = self:GetSyncVar(SYNC_GROUP_NAME, nil)
 	local rank = self:GetSyncVar(SYNC_GROUP_RANK, nil)

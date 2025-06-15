@@ -1,6 +1,15 @@
+--- Loot generation system that creates item drops from configured loot pools
+-- @module impulse.Loot
+
 impulse.Loot = impulse.Loot or {}
 
 local ANTICRASH_ATTEMPTS = 0
+
+--- Generates loot from a configured pool
+-- @string pool Pool name from impulse.Config.LootPools
+-- @treturn table Loot result as {itemClass = count, ...}
+-- @treturn number Total number of generated items
+-- @realm server
 function impulse.Loot.GenerateFromPool(pool)
 	local lootPool = impulse.Config.LootPools[pool]
 	local count = 0

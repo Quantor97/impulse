@@ -1,5 +1,5 @@
---- Handles the creation and editing of player groups
--- @module Group
+--- Provides persistent group and rank system, including database logic, rank syncing and player group metadata
+-- @module impulse.Group
 
 local DEFAULT_RANKS = pon.encode({
 	["Owner"] = {
@@ -19,6 +19,14 @@ local DEFAULT_RANKS = pon.encode({
 	}
 })
 
+--- Creates a new persistent group and stores it in the database
+-- @realm server
+-- @string name The group name
+-- @string ownerid The SteamID of the group's owner
+-- @int maxsize Maximum number of members
+-- @int maxstorage Maximum storage capacity
+-- @tparam[opt] table ranks Custom rank structure (uses default if nil)
+-- @tparam[opt] function callback Called with group ID on success, or nil if name is not unique
 function impulse.Group.DBCreate(name, ownerid, maxsize, maxstorage, ranks, callback)
 	impulse.Group.IsNameUnique(name, function(unique)
 		if unique then
@@ -41,18 +49,30 @@ function impulse.Group.DBCreate(name, ownerid, maxsize, maxstorage, ranks, callb
 	end)
 end
 
+--- Removes a group from the database by its ID
+-- @realm server
+-- @int groupid The internal database ID of the group
 function impulse.Group.DBRemove(groupid)
 	local query = mysql:Delete("impulse_rpgroups")
 	query:Where("id", groupid)
 	query:Execute()
 end
 
+--- Removes a group from the database by its name
+-- @realm server
+-- @string name Group name
 function impulse.Group.DBRemoveByName(name)
 	local query = mysql:Delete("impulse_rpgroups")
 	query:Where("name", name)
 	query:Execute()
 end
 
+--- Adds a player to a group in the database
+-- @realm server
+-- @string steamid The player's SteamID
+-- @int groupid The internal ID of the group
+-- @string rank The rank to assign (defaults to group's default rank)
+-- @tparam[opt] function callback Optional callback once database operation completes
 function impulse.Group.DBAddPlayer(steamid, groupid, rank, callback)
 	local query = mysql:Update("impulse_players")
 	query:Update("rpgroup", groupid)
@@ -66,6 +86,10 @@ function impulse.Group.DBAddPlayer(steamid, groupid, rank, callback)
 	query:Execute()
 end
 
+--- Removes a player from their group in the database
+-- @realm server
+-- @string steamid The player's SteamID
+-- @int groupid Unused, kept for legacy compatibility
 function impulse.Group.DBRemovePlayer(steamid, groupid)
 	local query = mysql:Update("impulse_players")
 	query:Update("rpgroup", nil)
@@ -74,6 +98,9 @@ function impulse.Group.DBRemovePlayer(steamid, groupid)
 	query:Execute()
 end
 
+--- Removes all players from the specified group
+-- @realm server
+-- @int groupid The group ID
 function impulse.Group.DBRemovePlayerMass(groupid)
 	local query = mysql:Update("impulse_players")
 	query:Update("rpgroup", nil)
@@ -82,6 +109,10 @@ function impulse.Group.DBRemovePlayerMass(groupid)
 	query:Execute()
 end
 
+--- Updates a player's group rank in the database
+-- @realm server
+-- @string steamid The player's SteamID
+-- @string rank The new rank
 function impulse.Group.DBUpdatePlayerRank(steamid, rank)
 	local query = mysql:Update("impulse_players")
 	query:Update("rpgrouprank", rank)
@@ -89,6 +120,11 @@ function impulse.Group.DBUpdatePlayerRank(steamid, rank)
 	query:Execute()
 end
 
+--- Shifts all players from one rank to another in a group
+-- @realm server
+-- @int groupid The group ID
+-- @string rank The old rank name
+-- @string newrank The new rank name
 function impulse.Group.DBPlayerRankShift(groupid, rank, newrank)
 	local query = mysql:Update("impulse_players")
 	query:Update("rpgrouprank", newrank)
@@ -97,6 +133,10 @@ function impulse.Group.DBPlayerRankShift(groupid, rank, newrank)
 	query:Execute()
 end
 
+--- Updates the rank structure of a group in the database
+-- @realm server
+-- @int groupid The group ID
+-- @tparam table ranks A table of ranks to store (will be PON encoded)
 function impulse.Group.DBUpdateRanks(groupid, ranks)
 	local query = mysql:Update("impulse_rpgroups")
 	query:Update("ranks", pon.encode(ranks))
@@ -104,6 +144,10 @@ function impulse.Group.DBUpdateRanks(groupid, ranks)
 	query:Execute()
 end
 
+--- Updates the group's maximum member limit
+-- @realm server
+-- @int groupid The group ID
+-- @int max Maximum number of members
 function impulse.Group.DBUpdateMaxMembers(groupid, max)
 	local query = mysql:Update("impulse_rpgroups")
 	query:Update("maxsize", max)
@@ -111,6 +155,10 @@ function impulse.Group.DBUpdateMaxMembers(groupid, max)
 	query:Execute()
 end
 
+--- Updates additional group metadata (e.g. description, color)
+-- @realm server
+-- @int groupid The group ID
+-- @tparam table data A table with group metadata (will be PON encoded)
 function impulse.Group.DBUpdateData(groupid, data)
 	local query = mysql:Update("impulse_rpgroups")
 	query:Update("data", pon.encode(data))
@@ -118,6 +166,10 @@ function impulse.Group.DBUpdateData(groupid, data)
 	query:Execute()
 end
 
+--- Refreshes the in-memory member list of a group from the database
+-- @realm server
+-- @string name Group name
+-- @tparam[opt] function callback Callback when done
 function impulse.Group.ComputeMembers(name, callback)
 	local id = impulse.Group.Groups[name].ID
 
@@ -149,6 +201,11 @@ function impulse.Group.ComputeMembers(name, callback)
 	query:Execute()
 end
 
+--- Changes the name of a group rank across all members
+-- @realm server
+-- @string name Group name
+-- @string from The old rank name
+-- @string to The new rank name
 function impulse.Group.RankShift(name, from, to)
 	local group = impulse.Group.Groups[name]
 
@@ -171,6 +228,11 @@ function impulse.Group.RankShift(name, from, to)
 	impulse.Group.NetworkRankToOnline(name, to)
 end
 
+--- Returns the default rank of a group
+-- Looks for the first rank that has permission level 0.
+-- @realm server
+-- @string name Group name
+-- @treturn string Default rank name (defaults to "Member" if none match)
 function impulse.Group.GetDefaultRank(name)
 	local data = impulse.Group.Groups[name]
 
@@ -183,6 +245,11 @@ function impulse.Group.GetDefaultRank(name)
 	return "Member"
 end
 
+--- Sets the metadata for a group (info string and color)
+-- @realm server
+-- @string name Group name
+-- @string info Group description
+-- @tparam[opt] Color col Group color (optional)
 function impulse.Group.SetMetaData(name, info, col)
 	local grp = impulse.Group.Groups[name]
 	local id = grp.ID
@@ -195,6 +262,10 @@ function impulse.Group.SetMetaData(name, info, col)
 	impulse.Group.DBUpdateData(id, data)
 end
 
+--- Sends group metadata (info + color) to a specific player
+-- @realm server
+-- @player to Target player
+-- @string name Group name
 function impulse.Group.NetworkMetaData(to, name)
 	local grp = impulse.Group.Groups[name]
 
@@ -210,6 +281,9 @@ function impulse.Group.NetworkMetaData(to, name)
 	net.Send(to)
 end
 
+--- Sends group metadata (info + color) to all online players in the group
+-- @realm server
+-- @string name Group name
 function impulse.Group.NetworkMetaDataToOnline(name)
 	local grp = impulse.Group.Groups[name]
 
@@ -229,6 +303,11 @@ function impulse.Group.NetworkMetaDataToOnline(name)
 	net.Send(rf)
 end
 
+--- Sends a single member's data to one player
+-- @realm server
+-- @player to Target player
+-- @string name Group name
+-- @string sid SteamID of the member
 function impulse.Group.NetworkMember(to, name, sid)
 	local member = impulse.Group.Groups[name].Members[sid]
 
@@ -239,6 +318,10 @@ function impulse.Group.NetworkMember(to, name, sid)
 	net.Send(to)
 end
 
+--- Broadcasts group metadata to all members of the group
+-- @realm server
+-- @string name Group name
+-- @string sid SteamID of the member
 function impulse.Group.NetworkMemberToOnline(name, sid)
 	local member = impulse.Group.Groups[name].Members[sid]
 
@@ -259,6 +342,10 @@ function impulse.Group.NetworkMemberToOnline(name, sid)
 	net.Send(rf)
 end
 
+--- Broadcasts a member removal to all online group members
+-- @realm server
+-- @string name Group name
+-- @string sid SteamID of removed member
 function impulse.Group.NetworkMemberRemoveToOnline(name, sid)
 	local rf = RecipientFilter()
 
@@ -275,6 +362,10 @@ function impulse.Group.NetworkMemberRemoveToOnline(name, sid)
 	net.Send(rf)
 end
 
+--- Sends all group members to the given player
+-- @realm server
+-- @player to Target player
+-- @string name Group name
 function impulse.Group.NetworkAllMembers(to, name)
 	local members = impulse.Group.Groups[name].Members
 
@@ -283,6 +374,9 @@ function impulse.Group.NetworkAllMembers(to, name)
 	end
 end
 
+--- Sends all group ranks to players with rank management permissions
+-- @realm server
+-- @string name Group name
 function impulse.Group.NetworkRanksToOnline(name)
 	local ranks = impulse.Group.Groups[name].Ranks
 	local data = pon.encode(ranks)
@@ -304,6 +398,11 @@ function impulse.Group.NetworkRanksToOnline(name)
 	net.Send(rf)
 end
 
+--- Sends a single rank structure to a player
+-- @realm server
+-- @string name Group name
+-- @player to Target player
+-- @string rankName Name of the rank
 function impulse.Group.NetworkRank(name, to, rankName)
 	local rank = impulse.Group.Groups[name].Ranks[rankName]
 	local data = pon.encode(rank)
@@ -315,6 +414,10 @@ function impulse.Group.NetworkRank(name, to, rankName)
 	net.Send(to)
 end
 
+--- Sends a single rank to all matching online group members
+-- @realm server
+-- @string name Group name
+-- @string rankName Rank name
 function impulse.Group.NetworkRankToOnline(name, rankName)
 	local rank = impulse.Group.Groups[name].Ranks[rankName]
 	local data = pon.encode(rank)
@@ -340,6 +443,10 @@ function impulse.Group.NetworkRankToOnline(name, rankName)
 	net.Send(rf)
 end
 
+--- Sends full rank table to a player
+-- @realm server
+-- @player to Target player
+-- @string name Group name
 function impulse.Group.NetworkRanks(to, name)
 	local ranks = impulse.Group.Groups[name].Ranks
 	local data = pon.encode(ranks)
@@ -348,6 +455,67 @@ function impulse.Group.NetworkRanks(to, name)
 	net.WriteUInt(#data, 32)
 	net.WriteData(data, #data)
 	net.Send(to)
+end
+
+--- Checks if a group name is already used
+-- @realm server
+-- @string name Group name to check
+-- @tparam function callback Function called with boolean result (true if unique)
+function impulse.Group.IsNameUnique(name, callback)
+	local query = mysql:Select("impulse_rpgroups")
+	query:Select("name")
+	query:Where("name", name)
+	query:Callback(function(result)
+		if type(result) == "table" and #result > 0 then
+			return callback(false)
+		else
+			return callback(true)
+		end
+	end)
+
+	query:Execute()
+end
+
+--- Loads group data from the database and caches it
+-- Calls the provided callback with the group name once loaded.
+-- @realm server
+-- @int id Group ID
+-- @tparam function onLoaded Callback receiving the group name
+function impulse.Group.Load(id, onLoaded)
+	local query = mysql:Select("impulse_rpgroups")
+	query:Select("ownerid")
+	query:Select("name")
+	query:Select("type")
+	query:Select("maxsize")
+	query:Select("maxstorage")
+	query:Select("ranks")
+	query:Select("data")
+	query:Where("id", id)
+	query:Callback(function(result)
+		if type(result) == "table" and #result > 0 then
+			local data = result[1]
+
+			if impulse.Group.Groups[data.name] then
+				return onLoaded(data.name)
+			end
+
+			impulse.Group.Groups[data.name] = {
+				ID = id,
+				OwnerID = data.ownerid,
+				Type = data.type,
+				MaxSize = data.maxsize,
+				MaxStorage = data.maxstorage,
+				Ranks = pon.decode(data.ranks),
+				Data = (data.data and pon.decode(data.data) or {})
+			}
+
+			if onLoaded then
+				onLoaded(data.name)
+			end
+		end
+	end)
+
+	query:Execute()
 end
 
 local function postCompute(self, name, rank, skipDb)
@@ -373,6 +541,13 @@ local function postCompute(self, name, rank, skipDb)
 	impulse.Group.NetworkMetaData(self, name)
 end
 
+--- @classmod Player
+
+--- Adds the player to a group and synchronizes metadata
+-- @realm server
+-- @string name Group name
+-- @string[opt] rank Rank name to assign (defaults to default rank)
+-- @bool[opt] skipDb Whether to skip saving to the database
 function meta:GroupAdd(name, rank, skipDb)
 	local id = impulse.Group.Groups[name].ID
 	local rank = rank or impulse.Group.GetDefaultRank(name)
@@ -386,6 +561,9 @@ function meta:GroupAdd(name, rank, skipDb)
 	end)
 end
 
+--- Removes the player from the specified group
+-- @realm server
+-- @string name Group name
 function meta:GroupRemove(name)
 	local id = impulse.Group.Groups[name].ID
 	local sid = self:SteamID()
@@ -398,6 +576,10 @@ function meta:GroupRemove(name)
 	self:SetSyncVar(SYNC_GROUP_RANK, nil, true)
 end
 
+--- applies the specified rank
+-- @realm server
+-- @int groupid The group ID
+-- @string[opt] rank The rank name to assign (default if invalid)
 function meta:GroupLoad(groupid, rank)
 	impulse.Group.Load(groupid, function(name)
 		if not IsValid(self) then
@@ -437,56 +619,4 @@ function meta:GroupLoad(groupid, rank)
 			impulse.Group.Groups[name].MaxSize = impulse.Config.GroupMaxMembersVIP
 		end
 	end)
-end
-
-function impulse.Group.IsNameUnique(name, callback)
-	local query = mysql:Select("impulse_rpgroups")
-	query:Select("name")
-	query:Where("name", name)
-	query:Callback(function(result)
-		if type(result) == "table" and #result > 0 then
-			return callback(false)
-		else
-			return callback(true)
-		end
-	end)
-
-	query:Execute()
-end
-
-function impulse.Group.Load(id, onLoaded)
-	local query = mysql:Select("impulse_rpgroups")
-	query:Select("ownerid")
-	query:Select("name")
-	query:Select("type")
-	query:Select("maxsize")
-	query:Select("maxstorage")
-	query:Select("ranks")
-	query:Select("data")
-	query:Where("id", id)
-	query:Callback(function(result)
-		if type(result) == "table" and #result > 0 then
-			local data = result[1]
-
-			if impulse.Group.Groups[data.name] then
-				return onLoaded(data.name)
-			end
-
-			impulse.Group.Groups[data.name] = {
-				ID = id,
-				OwnerID = data.ownerid,
-				Type = data.type,
-				MaxSize = data.maxsize,
-				MaxStorage = data.maxstorage,
-				Ranks = pon.decode(data.ranks),
-				Data = (data.data and pon.decode(data.data) or {})
-			}
-
-			if onLoaded then
-				onLoaded(data.name)
-			end
-		end
-	end)
-
-	query:Execute()
 end

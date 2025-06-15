@@ -1,4 +1,14 @@
+--- 
+-- @classmod Player
+
 meta.OldSetTeam = meta.OldSetTeam or meta.SetTeam
+
+--- Sets the team of a player, applying models, weapons, inventory and stats.
+-- Also triggers `OnPlayerChangedTeam` and `UpdatePlayerSync` hooks.
+-- @realm server
+-- @int teamID Target team ID (from `impulse.Teams.Data`)
+-- @bool[opt=false] forced Whether the change is forced
+-- @treturn boolean Always returns true
 function meta:SetTeam(teamID, forced)
 	local teamData = impulse.Teams.Data[teamID]
 	local teamPlayers = team.NumPlayers(teamID)
@@ -65,6 +75,12 @@ function meta:SetTeam(teamID, forced)
 	return true
 end
 
+--- Sets the class of the current team, applying overrides to model, skin, loadout and inventory.
+-- Also triggers the `PlayerChangeClass` hook.
+-- @realm server
+-- @int classID Class ID (index in `teamData.classes`)
+-- @bool[opt=false] skipLoadout If true, inventory and weapons are not modified
+-- @treturn boolean Always returns true
 function meta:SetTeamClass(classID, skipLoadout)
 	local teamData = impulse.Teams.Data[self:Team()]
 	local classData = teamData.classes[classID]
@@ -167,6 +183,11 @@ function meta:SetTeamClass(classID, skipLoadout)
 	return true
 end
 
+--- Sets the rank of the current team/class, applying overrides to model, skin, submaterials and inventory.
+-- Also triggers the `PlayerChangeRank` hook.
+-- @realm server
+-- @int rankID Rank ID (index in `teamData.ranks`)
+-- @treturn boolean Always returns true
 function meta:SetTeamRank(rankID)
 	local teamData = impulse.Teams.Data[self:Team()]
 	local classData = teamData.classes[self:GetTeamClass()]
@@ -288,11 +309,72 @@ function meta:SetTeamRank(rankID)
 	return true
 end
 
+--- Checks if a player has a whitelist for a specific team.
+-- Optionally compares if they meet or exceed a specific level.
+-- @realm server
+-- @string team Team name or ID
+-- @int[opt] level Minimum level
+-- @treturn boolean True if whitelist exists and level is met (if given)
+function meta:HasTeamWhitelist(team, level)
+	if not self.Whitelists then
+		return false
+	end
+
+	local whitelist = self.Whitelists[team]
+
+	if whitelist then
+		if level then
+			return whitelist >= level
+		else
+			return true
+		end
+	end
+
+	return false
+end
+
+--- Loads whitelist information from the database for this player.
+-- Populates `self.Whitelists`.
+-- @realm server
+function meta:SetupWhitelists()
+	self.Whitelists = {}
+
+	impulse.Teams.GetAllWhitelistsPlayer(self:SteamID(), function(result)
+		if not result or not IsValid(self) then
+			return
+		end
+
+		for v,k in pairs(result) do
+			local teamName = k.team
+			local level = k.level
+			local realTeam = impulse.Teams.NameRef[teamName]
+
+			--if not realTeam then -- team does not exist
+			--	continue
+			--end
+
+			self.Whitelists[realTeam or k.team] = level
+		end
+	end)
+end
+
+--- Provides whitelist storage and query functions for team access control. 
+-- @module impulse.Teams
+
+--- Initializes a default whitelist entry for the given SteamID.
+-- Currently unused / placeholder.
+-- @realm server
+-- @string steamid Player's SteamID
 function impulse.Teams.WhitelistSetup(steamid)
 	local query = mysql:Insert("impulse_whitelists")
 	query:Insert("steamid")
 end
 
+--- Sets or updates the whitelist level for a player on a specific team.
+-- @realm server
+-- @string steamid Player's SteamID
+-- @string team Team name
+-- @int level Whitelist access level
 function impulse.Teams.SetWhitelist(steamid, team, level)
 	local inTable = impulse.Teams.GetWhitelist(steamid, team, function(exists)
 		if exists then
@@ -311,6 +393,10 @@ function impulse.Teams.SetWhitelist(steamid, team, level)
 	end)
 end
 
+--- Retrieves all whitelisted SteamIDs and their levels for a specific team.
+-- @realm server
+-- @string team Team name
+-- @tparam function callback Function called with table of results
 function impulse.Teams.GetAllWhitelists(team, callback)
 	local query = mysql:Select("impulse_whitelists")
 	query:Select("level")
@@ -324,6 +410,10 @@ function impulse.Teams.GetAllWhitelists(team, callback)
 	query:Execute()
 end
 
+--- Retrieves all team whitelists for a specific player.
+-- @realm server
+-- @string steamid Player's SteamID
+-- @tparam function callback Function called with table of results
 function impulse.Teams.GetAllWhitelistsPlayer(steamid, callback)
 	local query = mysql:Select("impulse_whitelists")
 	query:Select("level")
@@ -352,42 +442,3 @@ function impulse.Teams.GetWhitelist(steamid, team, callback)
 	query:Execute()
 end
 
-function meta:HasTeamWhitelist(team, level)
-	if not self.Whitelists then
-		return false
-	end
-
-	local whitelist = self.Whitelists[team]
-
-	if whitelist then
-		if level then
-			return whitelist >= level
-		else
-			return true
-		end
-	end
-
-	return false
-end
-
-function meta:SetupWhitelists()
-	self.Whitelists = {}
-
-	impulse.Teams.GetAllWhitelistsPlayer(self:SteamID(), function(result)
-		if not result or not IsValid(self) then
-			return
-		end
-
-		for v,k in pairs(result) do
-			local teamName = k.team
-			local level = k.level
-			local realTeam = impulse.Teams.NameRef[teamName]
-
-			--if not realTeam then -- team does not exist
-			--	continue
-			--end
-
-			self.Whitelists[realTeam or k.team] = level
-		end
-	end)
-end
